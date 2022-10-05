@@ -4,14 +4,20 @@ import pandas as pd
 st.markdown("<center><h1>Fakenews - Análise de Imagens</h1><center>", unsafe_allow_html=True)
 st.markdown('<center><h4>DashBoard</h4><center>', unsafe_allow_html=True)
 
-df_wpp = pd.read_csv('./wpp.csv', sep=';')
-df_wpp['date_message'] = pd.to_datetime(df_wpp['date_message'], format = "%Y-%m-%d %H:%M:%S")
+df_completo = pd.read_csv('./df_completo.csv', sep=';')
+df_completo['date_message'] = pd.to_datetime(df_completo['date_message'], format = "%Y-%m-%d %H:%M:%S")
 
-min_date = df_wpp['date_message'].min()
-max_date = df_wpp['date_message'].max()
+min_date = df_completo['date_message'].min()
+max_date = df_completo['date_message'].max()
 
 with st.sidebar:
     st.sidebar.title("Filtros")
+    #st.sidebar.header("Plataformas: ")
+    plataforma = st.selectbox(
+        'Plataforma:',
+        ('Todas', 'WhatsApp', 'Telegram')
+    )
+    st.markdown('---')
     st.sidebar.header("Top: ")
     top = st.slider('TOP: ', 5, 100, 10)
     st.markdown('---')
@@ -38,9 +44,10 @@ end_date = str(end_date)
 print("Data inicial: ", start_date)
 print("Data Final: ", end_date)
 
-
-df_wpp = df_wpp.loc[(df_wpp['date_message'] >= start_date) & (df_wpp['date_message'] <= end_date)]
-df_group = df_wpp.groupby(by=['media']).agg('count').sort_values(by='id', ascending=False)
+if plataforma!='Todas':
+    df_completo = df_completo.loc[df_completo.plataforma == plataforma, :]
+df_completo = df_completo.loc[(df_completo['date_message'] >= start_date) & (df_completo['date_message'] <= end_date)]
+df_group = df_completo.groupby(by=['media']).agg('count').sort_values(by='id', ascending=False)
 df_group.reset_index(inplace=True)
 df_group = df_group[['media', 'id']]
 df_group.rename(columns={'id': 'count', 'media': 'imagem'}, inplace=True)
